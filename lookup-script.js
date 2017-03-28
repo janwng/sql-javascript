@@ -10,19 +10,6 @@ const client = new pg.Client({
   ssl      : settings.ssl
 });
 
-// client.connect((err) => {
-//   if (err) {
-//     return console.error("Connection Error", err);
-//   }
-//   client.query("SELECT $1::int AS number", ["1"], (err, result) => {
-//     if (err) {
-//       return console.error("error running query", err);
-//     }
-//     console.log(result.rows[0].number); //output: 1
-//     client.end();
-//   });
-// });
-
 var input = process.argv[2];
 
 client.connect((err) => {
@@ -30,17 +17,20 @@ client.connect((err) => {
     return console.error("Connection Error", err);
   }
 
-  client.query("SELECT * FROM famous_people WHERE last_name = $1 OR first_name = $1", [input], (err, result, done) => {
+  client.query("SELECT * FROM famous_people WHERE last_name = $1 OR first_name = $1", [input], (err, result) => {
+    if (err) {
+      return console.error("error running query", err);
+    }
 
-    done();
-
+    outputResults(result.rows);
+  
     client.end();
   });
 });
 
-function done() {
-  if (err) {
-    return console.error("error running query", err);
+function outputResults(result) {
+  for (i = 0; i < result.length; i++) {
+    var string = '-' + result[i].id + ': ' + result[i].first_name + ' ' + result[i].last_name + ', born ' + result[i].birthdate;
+    console.log(string);
   }
-  console.log(result.rows[0]);
 }
